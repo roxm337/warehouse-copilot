@@ -1,0 +1,16 @@
+.env
+venv/
+__pycache__/
+*.pyc
+*.sql
+*.sqlite3
+*.log
+*.db
+*.DS_Store
+.idea/
+*.iml
+*.vscode/
+*.flutter-plugins
+*.flutter-plugins-dependencies
+.packages
+.pub-cache/
