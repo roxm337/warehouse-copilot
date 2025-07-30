@@ -216,13 +216,6 @@ gunicorn main:app -w 4 -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000
 
 This project is licensed under the MIT License - see the LICENSE file for details.
 
-## 🆘 Support
-
-For support and questions:
-- Check the API documentation at `/docs`
-- Review the example queries above
-- Ensure your Groq API key is valid and has sufficient credits
-
 ---
 
 Built with ❤️ using FastAPI, Groq AI, and intelligent design patterns.
