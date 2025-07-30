@@ -104,16 +104,15 @@ class WarehouseApiService {
         .timeout(const Duration(seconds: 10));
     
     if (response.statusCode == 200) {
-      final data = json.decode(response.body);
-      final products = data['products'] as List;
-      return products.map((p) => Product.fromJson(p)).toList();
+      final data = json.decode(response.body) as List;
+      return data.map((p) => Product.fromJson(p)).toList();
     } else {
       throw Exception('Failed to get products: ${response.statusCode}');
     }
   }
 
-  // Get shipments with optional status filter
-  static Future<List<Shipment>> getShipments({String? status}) async {
+  // Get orders/shipments with optional status filter
+  static Future<List<Order>> getOrders({String? status}) async {
     final queryParams = <String, String>{};
     if (status != null) queryParams['status'] = status;
     
@@ -125,11 +124,10 @@ class WarehouseApiService {
         .timeout(const Duration(seconds: 10));
     
     if (response.statusCode == 200) {
-      final data = json.decode(response.body);
-      final shipments = data['shipments'] as List;
-      return shipments.map((s) => Shipment.fromJson(s)).toList();
+      final data = json.decode(response.body) as List;
+      return data.map((s) => Order.fromJson(s)).toList();
     } else {
-      throw Exception('Failed to get shipments: ${response.statusCode}');
+      throw Exception('Failed to get orders: ${response.statusCode}');
     }
   }
 

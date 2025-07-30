@@ -1,93 +1,163 @@
 class Product {
-  final String id;
+  final int id;
   final String name;
-  final String category;
-  final int stockLevel;
-  final int reorderPoint;
-  final double unitPrice;
-  final String location;
-  final String supplier;
-  final double? totalValue;
-  final bool? needsReorder;
+  final String description;
+  final double price;
+  final double tax;
+  final bool status;
+  final bool isDeleted;
+  final bool isFeatured;
+  final String? categoryIds;
+  final String? attributes;
+  final double discount;
+  final String discountType;
+  final int lowStockLimit;
+  final int minimumOrderQuantity;
+  final int maximumOrderQuantory;
+  final String? image;
+  final String? nutritionFactImage;
+  final String? nutritionFact;
+  final String unit;
+  final double weight;
+  final int viewCount;
+  final int popularityCount;
+  final DateTime createdAt;
+  final DateTime updatedAt;
 
   Product({
     required this.id,
     required this.name,
-    required this.category,
-    required this.stockLevel,
-    required this.reorderPoint,
-    required this.unitPrice,
-    required this.location,
-    required this.supplier,
-    this.totalValue,
-    this.needsReorder,
+    required this.description,
+    required this.price,
+    required this.tax,
+    required this.status,
+    required this.isDeleted,
+    required this.isFeatured,
+    this.categoryIds,
+    this.attributes,
+    required this.discount,
+    required this.discountType,
+    required this.lowStockLimit,
+    required this.minimumOrderQuantity,
+    required this.maximumOrderQuantory,
+    this.image,
+    this.nutritionFactImage,
+    this.nutritionFact,
+    required this.unit,
+    required this.weight,
+    required this.viewCount,
+    required this.popularityCount,
+    required this.createdAt,
+    required this.updatedAt,
   });
 
   factory Product.fromJson(Map<String, dynamic> json) {
     return Product(
-      id: json['id'] ?? '',
+      id: json['id'] ?? 0,
       name: json['name'] ?? '',
-      category: json['category'] ?? '',
-      stockLevel: json['stock_level'] ?? 0,
-      reorderPoint: json['reorder_point'] ?? 0,
-      unitPrice: (json['unit_price'] ?? 0.0).toDouble(),
-      location: json['location'] ?? '',
-      supplier: json['supplier'] ?? '',
-      totalValue: json['total_value']?.toDouble(),
-      needsReorder: json['needs_reorder'],
+      description: json['description'] ?? '',
+      price: (json['price'] ?? 0.0).toDouble(),
+      tax: (json['tax'] ?? 0.0).toDouble(),
+      status: json['status'] ?? false,
+      isDeleted: json['is_deleted'] ?? false,
+      isFeatured: json['is_featured'] ?? false,
+      categoryIds: json['category_ids'],
+      attributes: json['attributes'],
+      discount: (json['discount'] ?? 0.0).toDouble(),
+      discountType: json['discount_type'] ?? 'percent',
+      lowStockLimit: json['low_stock_limit'] ?? 0,
+      minimumOrderQuantity: json['minimum_order_quantity'] ?? 1,
+      maximumOrderQuantory: json['maximum_order_quantity'] ?? 1000,
+      image: json['image'],
+      nutritionFactImage: json['nutrition_fact_image'],
+      nutritionFact: json['nutrition_fact'],
+      unit: json['unit'] ?? '',
+      weight: (json['weight'] ?? 0.0).toDouble(),
+      viewCount: json['view_count'] ?? 0,
+      popularityCount: json['popularity_count'] ?? 0,
+      createdAt: DateTime.parse(json['created_at'] ?? DateTime.now().toIso8601String()),
+      updatedAt: DateTime.parse(json['updated_at'] ?? DateTime.now().toIso8601String()),
     );
   }
 
-  bool get isLowStock => stockLevel <= reorderPoint;
-  bool get isOutOfStock => stockLevel == 0;
+  bool get isLowStock => lowStockLimit > 0; // We don't have current stock from this endpoint
+  bool get isOutOfStock => !status;
   
   String get stockStatus {
-    if (isOutOfStock) return 'Out of Stock';
-    if (isLowStock) return 'Low Stock';
-    return 'In Stock';
+    if (!status) return 'Inactive';
+    if (isDeleted) return 'Deleted';
+    return 'Active';
   }
+
+  double get finalPrice => price - (discountType == 'percent' ? price * discount / 100 : discount);
 }
 
-class Shipment {
-  final String id;
-  final String productId;
-  final int quantity;
-  final String status;
-  final String origin;
-  final String destination;
-  final DateTime expectedDate;
-  final DateTime? actualDate;
+class Order {
+  final int id;
+  final int userId;
+  final double orderAmount;
+  final String orderStatus;
+  final String paymentStatus;
+  final String paymentMethod;
+  final String orderType;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  final String date;
+  final String? deliveryDate;
+  final double deliveryCharge;
+  final double totalTaxAmount;
+  final bool isGuest;
+  final bool checked;
+  final String? orderNote;
+  final String? deliveryAddress;
 
-  Shipment({
+  Order({
     required this.id,
-    required this.productId,
-    required this.quantity,
-    required this.status,
-    required this.origin,
-    required this.destination,
-    required this.expectedDate,
-    this.actualDate,
+    required this.userId,
+    required this.orderAmount,
+    required this.orderStatus,
+    required this.paymentStatus,
+    required this.paymentMethod,
+    required this.orderType,
+    required this.createdAt,
+    required this.updatedAt,
+    required this.date,
+    this.deliveryDate,
+    required this.deliveryCharge,
+    required this.totalTaxAmount,
+    required this.isGuest,
+    required this.checked,
+    this.orderNote,
+    this.deliveryAddress,
   });
 
-  factory Shipment.fromJson(Map<String, dynamic> json) {
-    return Shipment(
-      id: json['id'] ?? '',
-      productId: json['product_id'] ?? '',
-      quantity: json['quantity'] ?? 0,
-      status: json['status'] ?? '',
-      origin: json['origin'] ?? '',
-      destination: json['destination'] ?? '',
-      expectedDate: DateTime.parse(json['expected_date']),
-      actualDate: json['actual_date'] != null 
-          ? DateTime.parse(json['actual_date'])
-          : null,
+  factory Order.fromJson(Map<String, dynamic> json) {
+    return Order(
+      id: json['id'] ?? 0,
+      userId: json['user_id'] ?? 0,
+      orderAmount: (json['order_amount'] ?? 0.0).toDouble(),
+      orderStatus: json['order_status'] ?? '',
+      paymentStatus: json['payment_status'] ?? '',
+      paymentMethod: json['payment_method'] ?? '',
+      orderType: json['order_type'] ?? '',
+      createdAt: DateTime.parse(json['created_at'] ?? DateTime.now().toIso8601String()),
+      updatedAt: DateTime.parse(json['updated_at'] ?? DateTime.now().toIso8601String()),
+      date: json['date'] ?? '',
+      deliveryDate: json['delivery_date'],
+      deliveryCharge: (json['delivery_charge'] ?? 0.0).toDouble(),
+      totalTaxAmount: (json['total_tax_amount'] ?? 0.0).toDouble(),
+      isGuest: json['is_guest'] ?? false,
+      checked: json['checked'] ?? false,
+      orderNote: json['order_note'],
+      deliveryAddress: json['delivery_address'],
     );
   }
 
-  bool get isDelayed => status == 'delayed';
-  bool get isDelivered => status == 'delivered';
-  bool get isInTransit => status == 'in_transit';
-  bool get isPending => status == 'pending';
+  bool get isCompleted => orderStatus == 'delivered';
+  bool get isPending => orderStatus == 'placed' || orderStatus == 'confirmed';
+  bool get isProcessing => orderStatus == 'processing' || orderStatus == 'out_for_delivery';
+  bool get isCancelled => orderStatus == 'cancelled';
+  bool get isPaid => paymentStatus == 'paid';
 }
 
 class WarehouseStats {
@@ -95,7 +165,7 @@ class WarehouseStats {
   final int lowStockProducts;
   final double totalInventoryValue;
   final Map<String, int> categories;
-  final Map<String, int> shipmentStatus;
+  final Map<String, int> orderStatus;
   final double averageStockLevel;
 
   WarehouseStats({
@@ -103,7 +173,7 @@ class WarehouseStats {
     required this.lowStockProducts,
     required this.totalInventoryValue,
     required this.categories,
-    required this.shipmentStatus,
+    required this.orderStatus,
     required this.averageStockLevel,
   });
 
@@ -113,7 +183,7 @@ class WarehouseStats {
       lowStockProducts: json['low_stock_products'] ?? 0,
       totalInventoryValue: (json['total_inventory_value'] ?? 0.0).toDouble(),
       categories: Map<String, int>.from(json['categories'] ?? {}),
-      shipmentStatus: Map<String, int>.from(json['shipment_status'] ?? {}),
+      orderStatus: Map<String, int>.from(json['order_status'] ?? {}),
       averageStockLevel: (json['average_stock_level'] ?? 0.0).toDouble(),
     );
   }

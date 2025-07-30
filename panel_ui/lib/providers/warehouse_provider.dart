@@ -7,7 +7,7 @@ class WarehouseProvider with ChangeNotifier {
   WarehouseStats? _stats;
   List<Product> _products = [];
   List<Product> _lowStockProducts = [];
-  List<Shipment> _shipments = [];
+  List<Order> _orders = [];
   
   bool _isLoading = false;
   String? _error;
@@ -17,7 +17,7 @@ class WarehouseProvider with ChangeNotifier {
   WarehouseStats? get stats => _stats;
   List<Product> get products => _products;
   List<Product> get lowStockProducts => _lowStockProducts;
-  List<Shipment> get shipments => _shipments;
+  List<Order> get orders => _orders;
   bool get isLoading => _isLoading;
   String? get error => _error;
   bool get isConnected => _isConnected;
@@ -28,21 +28,24 @@ class WarehouseProvider with ChangeNotifier {
   int get lowStockCount => _stats?.lowStockProducts ?? 0;
   double get averageStockLevel => _stats?.averageStockLevel ?? 0.0;
 
-  List<Product> get criticalStockProducts => 
-      _products.where((p) => p.stockLevel == 0).toList();
+  List<Product> get inactiveProducts => 
+      _products.where((p) => !p.status).toList();
 
-  List<Shipment> get delayedShipments => 
-      _shipments.where((s) => s.isDelayed).toList();
+  List<Product> get featuredProducts => 
+      _products.where((p) => p.isFeatured).toList();
 
-  List<Shipment> get pendingShipments => 
-      _shipments.where((s) => s.isPending).toList();
+  List<Order> get pendingOrders => 
+      _orders.where((o) => o.isPending).toList();
+
+  List<Order> get completedOrders => 
+      _orders.where((o) => o.isCompleted).toList();
 
   Map<String, int> get productsByCategory {
-    final Map<String, int> result = {};
-    for (final product in _products) {
-      result[product.category] = (result[product.category] ?? 0) + 1;
-    }
-    return result;
+    return _stats?.categories ?? {};
+  }
+
+  Map<String, int> get ordersByStatus {
+    return _stats?.orderStatus ?? {};
   }
 
   // Actions
@@ -83,13 +86,13 @@ class WarehouseProvider with ChangeNotifier {
         WarehouseApiService.getWarehouseStats(),
         WarehouseApiService.getProducts(),
         WarehouseApiService.getLowStockProducts(),
-        WarehouseApiService.getShipments(),
+        WarehouseApiService.getOrders(),
       ]);
 
       _stats = futures[0] as WarehouseStats;
       _products = futures[1] as List<Product>;
       _lowStockProducts = futures[2] as List<Product>;
-      _shipments = futures[3] as List<Shipment>;
+      _orders = futures[3] as List<Order>;
 
     } catch (e) {
       _setError('Failed to load warehouse data: ${e.toString()}');
@@ -121,16 +124,16 @@ class WarehouseProvider with ChangeNotifier {
     }
   }
 
-  Future<void> loadShipments({String? status}) async {
+  Future<void> loadOrders({String? status}) async {
     if (!_isConnected) return;
 
     _setLoading(true);
     _clearError();
 
     try {
-      _shipments = await WarehouseApiService.getShipments(status: status);
+      _orders = await WarehouseApiService.getOrders(status: status);
     } catch (e) {
-      _setError('Failed to load shipments: ${e.toString()}');
+      _setError('Failed to load orders: ${e.toString()}');
     } finally {
       _setLoading(false);
     }
@@ -149,19 +152,19 @@ class WarehouseProvider with ChangeNotifier {
 
   // Filter methods
   List<Product> getProductsByCategory(String category) {
-    return _products.where((p) => p.category == category).toList();
+    return _products.where((p) => p.categoryIds?.contains(category) ?? false).toList();
   }
 
-  List<Shipment> getShipmentsByStatus(String status) {
-    return _shipments.where((s) => s.status == status).toList();
+  List<Order> getOrdersByStatus(String status) {
+    return _orders.where((o) => o.orderStatus == status).toList();
   }
 
   List<Product> searchProducts(String query) {
     final lowercaseQuery = query.toLowerCase();
     return _products.where((p) => 
       p.name.toLowerCase().contains(lowercaseQuery) ||
-      p.id.toLowerCase().contains(lowercaseQuery) ||
-      p.category.toLowerCase().contains(lowercaseQuery)
+      p.id.toString().contains(lowercaseQuery) ||
+      (p.description.toLowerCase().contains(lowercaseQuery))
     ).toList();
   }
 
@@ -186,7 +189,7 @@ class WarehouseProvider with ChangeNotifier {
     _stats = null;
     _products.clear();
     _lowStockProducts.clear();
-    _shipments.clear();
+    _orders.clear();
     _error = null;
     _isLoading = false;
     _isConnected = false;

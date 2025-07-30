@@ -46,11 +46,11 @@ class ProductsTab extends StatelessWidget {
                             margin: const EdgeInsets.only(bottom: 8),
                             child: ListTile(
                               leading: CircleAvatar(
-                                backgroundColor: product.stockLevel <= product.reorderPoint
+                                backgroundColor: product.lowStockLimit <= product.minimumOrderQuantity
                                     ? Colors.red
                                     : Colors.green,
                                 child: Text(
-                                  product.stockLevel.toString(),
+                                  product.lowStockLimit.toString(),
                                   style: const TextStyle(
                                     color: Colors.white,
                                     fontWeight: FontWeight.bold,
@@ -61,9 +61,9 @@ class ProductsTab extends StatelessWidget {
                               subtitle: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text('Category: ${product.category}'),
-                                  Text('Location: ${product.location}'),
-                                  Text('Supplier: ${product.supplier}'),
+                                  Text('Unit: ${product.unit}'),
+                                  Text('Weight: ${product.weight}g'),
+                                  Text('Price: \$${product.price.toStringAsFixed(2)}'),
                                 ],
                               ),
                               trailing: Column(
@@ -71,15 +71,15 @@ class ProductsTab extends StatelessWidget {
                                 crossAxisAlignment: CrossAxisAlignment.end,
                                 children: [
                                   Text(
-                                    '\$${product.unitPrice.toStringAsFixed(2)}',
+                                    'Discount: ${product.discount}% ${product.discountType}',
                                     style: const TextStyle(
                                       fontWeight: FontWeight.bold,
                                       fontSize: 16,
                                     ),
                                   ),
-                                  if (product.needsReorder == true)
+                                  if (product.lowStockLimit <= product.minimumOrderQuantity)
                                     const Text(
-                                      'Reorder',
+                                      'Low Stock',
                                       style: TextStyle(
                                         color: Colors.red,
                                         fontSize: 12,

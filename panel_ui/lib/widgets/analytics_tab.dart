@@ -32,7 +32,7 @@ class AnalyticsTab extends StatelessWidget {
                   ),
                   const SizedBox(width: 16),
                   Expanded(
-                    child: _buildShipmentStatusChart(provider),
+                    child: _buildOrderStatusChart(provider),
                   ),
                 ],
               ),
@@ -87,14 +87,14 @@ class AnalyticsTab extends StatelessWidget {
     );
   }
 
-  Widget _buildShipmentStatusChart(WarehouseProvider provider) {
+  Widget _buildOrderStatusChart(WarehouseProvider provider) {
     final stats = provider.stats;
-    if (stats == null || stats.shipmentStatus.isEmpty) {
+    if (stats == null || stats.orderStatus.isEmpty) {
       return const Card(
         child: Padding(
           padding: EdgeInsets.all(16),
           child: Center(
-            child: Text('No shipment data available'),
+            child: Text('No order data available'),
           ),
         ),
       );
@@ -115,7 +115,7 @@ class AnalyticsTab extends StatelessWidget {
               height: 200,
               child: BarChart(
                 BarChartData(
-                  barGroups: _createShipmentBars(stats.shipmentStatus),
+                  barGroups: _createOrderBars(stats.orderStatus),
                   titlesData: FlTitlesData(
                     leftTitles: AxisTitles(
                       sideTitles: SideTitles(showTitles: true),
@@ -124,7 +124,7 @@ class AnalyticsTab extends StatelessWidget {
                       sideTitles: SideTitles(
                         showTitles: true,
                         getTitlesWidget: (value, meta) {
-                          final statuses = stats.shipmentStatus.keys.toList();
+                          final statuses = stats.orderStatus.keys.toList();
                           if (value.toInt() < statuses.length) {
                             return Text(
                               statuses[value.toInt()],
@@ -173,7 +173,7 @@ class AnalyticsTab extends StatelessWidget {
                 _buildTableRow('Total Inventory Value', '\$${stats.totalInventoryValue.toStringAsFixed(2)}'),
                 _buildTableRow('Average Stock Level', '${stats.averageStockLevel.toStringAsFixed(1)}%'),
                 _buildTableRow('Categories', stats.categories.length.toString()),
-                _buildTableRow('Shipment Types', stats.shipmentStatus.length.toString()),
+                _buildTableRow('Order Types', stats.orderStatus.length.toString()),
               ],
             ),
           ],
@@ -210,15 +210,15 @@ class AnalyticsTab extends StatelessWidget {
     }).toList();
   }
 
-  List<BarChartGroupData> _createShipmentBars(Map<String, int> shipmentStatus) {
+  List<BarChartGroupData> _createOrderBars(Map<String, int> orderStatus) {
     int index = 0;
-    return shipmentStatus.entries.map((entry) {
+    return orderStatus.entries.map((entry) {
       return BarChartGroupData(
         x: index++,
         barRods: [
           BarChartRodData(
             toY: entry.value.toDouble(),
-            color: _getShipmentStatusColor(entry.key),
+            color: _getOrderStatusColor(entry.key),
             width: 20,
           ),
         ],
@@ -226,16 +226,16 @@ class AnalyticsTab extends StatelessWidget {
     }).toList();
   }
 
-  Color _getShipmentStatusColor(String status) {
+  Color _getOrderStatusColor(String status) {
     switch (status.toLowerCase()) {
-      case 'delivered':
+      case 'completed':
         return Colors.green;
-      case 'in_transit':
-        return Colors.blue;
       case 'pending':
         return Colors.orange;
-      case 'delayed':
+      case 'cancelled':
         return Colors.red;
+      case 'processing':
+        return Colors.blue;
       default:
         return Colors.grey;
     }
